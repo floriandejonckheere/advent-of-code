@@ -9,3 +9,6 @@ passwords = File
 
 # Part one
 puts passwords.count { |(_, m, n, c, p)| (m.to_i..n.to_i) === p.chars.tally[c] }
+
+# Part two
+puts passwords.count { |(_, m, n, c, p)| (p[m.to_i - 1] == c) ^ (p[n.to_i - 1] == c) }
