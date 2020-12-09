@@ -2,6 +2,8 @@
 
 # frozen_string_literal: true
 
+require "byebug"
+
 program = File
   .read("./input.txt")
   .split("\n")
@@ -35,7 +37,12 @@ puts acc
 class CycleError < StandardError; end
 
 def execute(program, pc = 0, acc = 0, exe = [], offset = 0)
-  return true, pc, acc if exe.include? pc
+  puts "#{Array.new(offset).join(' ')}executing pc = #{pc}, acc = #{acc}, op = #{program[pc]&.join(' ')}, exe = #{exe.join(':')}, cycle = #{exe.include? pc}"
+
+  if exe.include? pc
+    puts "cycled"
+    raise CycleError
+  end
 
   exe << pc
 
@@ -45,28 +52,13 @@ def execute(program, pc = 0, acc = 0, exe = [], offset = 0)
   when nil
     acc
   when "acc"
-    pc += 1
-    acc += adr
-    execute(program, pc, acc, exe, offset)
+    execute(program, pc + 1, acc + adr, exe)
   when "jmp"
-    pc += adr
-    execute(program, pc, acc, exe)
+    execute(program, pc + adr, acc, exe) rescue execute(program, pc + 1, acc + adr, exe, offset + 1)
   when "nop"
-    pc += 1
-    execute(program, pc, acc, exe)
+    execute(program, pc + 1, acc + adr, exe) rescue execute(program, pc + adr, acc, exe, offset + 1)
+  else raise "unknown op: #{op}"
   end
 end
 
-
-program.each_with_index do |(op, adr), i|
-  if op == "jmp" || op == "nop"
-    prg = program.dup
-    prg[i][0] = (op == "jmp" ? "nop" : "jmp")
-  else
-    prg = program
-  end
-
-  puts execute(prg)
-rescue CycleError
-  next
-end
+puts "#{execute(program, 0, 0, [])} should equal 1023"
