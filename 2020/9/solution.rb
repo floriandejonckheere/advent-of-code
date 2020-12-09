@@ -18,4 +18,21 @@ def sum(buffer, protocol)
 end
 
 size = 25
-puts sum(protocol[0..(size - 1)], protocol[size..])
+sum = sum(protocol[0..(size - 1)], protocol[size..])
+puts sum
+
+# Part two
+def weakness(protocol, sum)
+  protocol.each_with_index do |_, i|
+    acc = []
+
+    protocol[i..].each do |m|
+      return acc.minmax.sum if acc.sum == sum
+      next if acc.sum > sum
+
+      acc << m
+    end
+  end
+end
+
+puts weakness(protocol, sum)
